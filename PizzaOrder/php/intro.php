@@ -1,7 +1,6 @@
 <?php
-//header("Content-Type: application/json");
-session_start();
-$_POST['emailInput'] = "wow@gmail.com";
+header("Content-Type: application/json");
+
 $db_conn = connect_db();
 
 $qry = <<<END
@@ -23,12 +22,15 @@ if ($rs->num_rows > 0){
 END2;
     $rs2 = $db_conn->query($qry2);
     if ($rs2->num_rows > 0){
-        $posts = array("status" => "OK");
-        $posts['posts'] = array();
+        $addresses = array("status" => "OK");
+        $addresses['addresses'] = array();
         while ($row2 = $rs2->fetch_assoc()){
-            array_push($posts['posts'], $row2);
+            array_push($addresses['addresses'], $row2);
         }
-        echo json_encode($posts);
+        echo json_encode($addresses);
+        /*LOOKS LIKE: {"status":"OK",
+        "addresses":[{"addr":"12 Electric Avenue","city":"Austin","prov":"Texas","post":"N6H 2B5","appt":null},
+                    {"addr":"98 Crowd Street","city":"Austin","prov":"Texas","post":"N6H 2B5","appt":"820"}]}*/
     }
 } else {
     echo '{ "status": "None" }';

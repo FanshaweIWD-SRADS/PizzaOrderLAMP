@@ -21,6 +21,6 @@ var onEntry = function(response){
  } else {
     //$("#outputDiv").append(response.status);
     //currently just shows the email address. change intro.php to run queries on valid email addresses. Then here will be a function call to the next function that will change the outputDiv to the content for the next page.
-    $("#test").append(response.userEmail);
+    $("#test").append(response.addresses[0].addr);
  }
 };
