@@ -20,8 +20,8 @@ session_start();?>
     <!--all real output goes into this div -->
     <div id="outputDiv">
     </div>
-    <!--Errors and output for testing -->
+    <!--Errors and output FOR TESTING -->
     <p id="error"></p>
-    <p id="test">User Email: </p>
+    <p id="test">Test Output Area: </p>
 </body>
 </html>
