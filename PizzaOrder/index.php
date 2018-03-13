@@ -9,6 +9,7 @@ session_start();?>
     <title>Group 5 Pizza Order Site</title>
     <!--styles-->
     <link href="https://fonts.googleapis.com/css?family=Krona+One" rel="stylesheet"> 
+    <link href="styles/style.css" rel="stylesheet"/>
     <!-- scripts -->
     <script src="http://code.jquery.com/jquery-1.11.2.min.js"></script>
     <script src="scripts/AaronScript.js"></script>
@@ -18,10 +19,10 @@ session_start();?>
 <body onload="loadFirstPage();" >
     <h1>Pizza Order Title</h1>
     <!--all real output goes into this div -->
-    <div id="outputDiv">
-    </div>
+    <div id="outputDiv"></div>
     <!--Errors and output FOR TESTING -->
-    <p id="error"></p>
-    <p id="test">Test Output Area: </p>
+    <p id="error"></p> <!-- Error output area -->
+    <p id="test"></p> <!-- Test output area -->
+
 </body>
 </html>
