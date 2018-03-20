@@ -18,7 +18,7 @@ if ($rs->num_rows > 0){
     //LOOKS LIKE: {"status":"OK","0":{"cusID":"2"}}
     
     $qry2 = <<<END2
-    select distinct addr, city, prov, post, appt from orders where cusID = {$customerID};
+    select distinct addr, city, prov, post, appt from address where cusID = {$customerID};
 END2;
     $rs2 = $db_conn->query($qry2);
     if ($rs2->num_rows > 0){
