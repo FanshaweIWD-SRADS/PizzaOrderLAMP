@@ -14,16 +14,21 @@ var currentOrder = {
     "pizzas":[]
 };
 
-/*  Definition of Pizza Object
+/*  Definition of Pizza Class
     Purpose: To encapsulate all the qualities of a pizza for both temporary storage and then to conveniently send data to MySQL server upon order completion.
-    TODO: May need to change this to a class, so each new Pizza can be created via ' x = new Pizza();' syntax.
 */
-function Pizza() {
-    Pizza.size = "";
-    Pizza.dough = "";
-    Pizza.sauce = "";
-    Pizza.cheese = "";
-    Pizza.toppings = "";
+class Pizza {
+    constructor(){
+        this.size = " ";
+        this.dough = " ";
+        this.sauce = " ";
+        this.cheese = " ";
+        this.toppings = " "; //we don't actually need to do anything special with toppings, so just store it as a string!
+    }
+    toString(){
+        console.log(`Size: ${this.size}  Dough: ${this.dough}  Sauce: ${this.sauce} 
+        Cheese: ${this.cheese} Toppings: ${this.toppings}`);
+    }
 }
 // from https://stackoverflow.com/questions/46155/how-to-validate-an-email-address-in-javascript .
 function validateEmail(email) {
@@ -173,20 +178,147 @@ var beginOrder = function(res) {
             displayAddressPage(); //This sorta locks the user into entering new addresses if they attempt but fail
             //could optionally add in some more code to repopulate the address fields.
         } else {
-            //In this case, they selected an old address
-            if(currentOrder.addressInfo == "old"){
-                //page change on outputDiv here
-                console.log(currentOrder);
-                $("#outputDiv").html("<h1>Riley's code goes here</h1>");
-            } else { //In this case the entered a new address
+            //In this case, they added a new address, so I need to actually add that to the global object.
+            if(currentOrder.addressInfo == "new"){
                 currentOrder.address = res;
-                //page change on outputDiv here
-                console.log(currentOrder);
-                $("#outputDiv").html("<h1>Riley's code goes here</h1>");
             }
+            console.log(currentOrder); //size dough sauce cheese
+            $("#outputDiv").html(`<h1>Pizza Order Time!</h1>
+        <h3>Please select one of each option below!</h3>
+    <form id="pizzaForm" name="pizzaForm">
+        <label for="selSize">Size: </label>
+        <select id="selSize" name="selSize">
+            <option value="small" selected="selected">Small</option>
+            <option value="medium">Medium</option>
+            <option value="large">Large</option>
+            <option value="xlarge">Extra Large</option>
+        </select> 
+        <br/>
+        <label for="selDough">Dough: </label>
+        <select id="selDough" name="selDough">
+            <option value="white" selected="selected">White</option>
+            <option value="whole">Whole Wheat</option>
+            <option value="gluten">Gluten Free</option>
+            <option value="newyork">New York Style</option>
+            <option value="neapolitan">Neapolitan</option>
+            <option value="sicilian">Sicilian</option>
+        </select> 
+        <br/>
+        <label for="selSauce">Sauce: </label>
+        <select id="selSauce" name="selSauce">
+            <option value="marinara" selected="selected">Marinara</option>
+            <option value="alfredo">Alfredo</option>
+            <option value="bbq">BBQ Sauce</option>
+            <option value="salsa">Salsa</option>
+            <option value="bechamel">Bechamel</option>
+            <option value="hummus">Hummus</option>
+            <option value="ranch">Ranch</option>
+            <option value="garlic">Garlic Olive Oil</option>
+            <option value="balsamic">Balsamc Glaze</option>
+        </select> 
+        <br/>
+        <label for="selCheese">Cheese: </label>
+        <select id="selCheese" name="selCheese">
+            <option value="mozzarella" selected="selected">Mozzarella</option>
+            <option value="cheddar">Cheddar Blend</option>
+            <option value="7cheese">7-Cheese Mix</option>
+            <option value="provolone">Provolone</option>
+            <option value="gouda">Gouda</option>
+            <option value="goat">Goat</option>
+            <option value="gruyere">Gruyere</option>
+            <option value="italian">Italian Blend</option>
+        </select> 
+        <br/>
+        <input type="submit" id="opSubmit" name="opSubmit" value="Submit">
+    </form>`);
+            $("#pizzaForm").submit(function(event){
+                var newPizza = new Pizza();
+                newPizza.size = $("#selSize").val();
+                newPizza.dough = $("#selDough").val();
+                newPizza.sauce = $("#selSauce").val();
+                newPizza.cheese = $("#selCheese").val();
+                console.log("new pizza: ");
+                newPizza.toString();
+                toppingPage(newPizza);
+            });
         }        
     } else {
         console.log("NANI! ... well, this is what I have");
         console.log(currentOrder);
     }    
+}
+//Step 4
+function toppingPage(newPizza) {
+    $("#outputDiv").html(`
+    <h1>Pizza Order Time!</h1>
+    <h3>Please select up to 7 toppings below!</h3>
+    <form id="toppingForm" name="toppingForm">
+        <label for="chkPepperoni">Pepperoni</label>
+        <input type="checkbox" id="chkPepperoni" name="toppings" value="pepperoni"/><br/>
+
+        <label for="chkHam">Ham</label>
+        <input type="checkbox" id="chkHam" name="toppings" value="ham"/><br/>
+
+        <label for="chkChicken">Chicken</label>
+        <input type="checkbox" id="chkChicken" name="toppings" value="chicken"/><br/>
+
+        <label for="chkBacon">Bacon</label>
+        <input type="checkbox" id="chkBacon" name="toppings" value="bacon"/><br/>
+
+        <label for="chkBeef">Ground Beef</label>
+        <input type="checkbox" id="chkBeef" name="toppings" value="beef"/><br/>
+
+        <label for="chkItSausage">Italian sausage</label>
+        <input type="checkbox" id="chkItSausage" name="toppings" value="italian sausage"/><br/>
+
+        <label for="chkHotSausage">Hot Sausage</label>
+        <input type="checkbox" id="chkHotSausage" name="toppings" value="hot sausage"/><br/>
+
+        <label for="chkRedOnion">Red Onion</label>
+        <input type="checkbox" id="chkRedOnion" name="toppings" value="red onion"/><br/>
+
+        <label for="chkSauOnion">Sauteed Onion</label>
+        <input type="checkbox" id="chkSauOnion" name="toppings" value="sauteed onion"/><br/>
+
+        <label for="chkGrePepper">Green Pepper</label>
+        <input type="checkbox" id="chkGrePepper" name="toppings" value="green pepper"/><br/>
+
+        <label for="chkHotPeppers">Hot Peppers</label>
+        <input type="checkbox" id="chkHotPeppers" name="toppings" value="hot pepper"/><br/>
+
+        <label for="chkMushrooms">Mushrooms</label>
+        <input type="checkbox" id="chkMushrooms" name="toppings" value="mushroom"/><br/>
+
+        <label for="chkPineapple">Pineapple</label>
+        <input type="checkbox" id="chkPineapple" name="toppings" value="pineapple"/><br/>
+
+        <label for="chkAnchovies">Anchovies</label>
+        <input type="checkbox" id="chkAnchovies" name="toppings" value="anchovies"/><br/>
+
+        <label for="chkOlives">Olives</label>
+        <input type="checkbox" id="chkOlives" name="toppings" value="olives"/><br/>
+
+        <label for="chkTomatoes">Sundried Tomatoes</label>
+        <input type="checkbox" id="chkTomatoes" name="toppings" value="tomatoes"/><br/>
+        <br/>
+        <input type="submit" id="toppingSubmit" name="toppingSubmit" value="Submit">
+    </form>`);
+    $("#toppingForm").submit(function(event){
+        var items = [];
+        $( "input[type=checkbox]:checked" ).each(function(){
+            items.push($(this).val());
+        });
+        items.forEach(function(item, index){
+            newPizza.toppings += item + ".";
+        });
+        console.log("Here's the current Order:");
+        console.log(currentOrder);
+        console.log("Heres the current pizza");
+        console.log(newPizza);
+        alert(newPizza.toString());
+        orderCheckPage(newPizza);
+    });
+}
+function orderCheckPage(newPizza) {
+    $("#outputDiv").html(`<h1>hey there!</h1>`);
 }
