@@ -5,6 +5,7 @@ $address = array();
 $address['status'] = "YES";
 
 //Probably more validation should be added. 
+
 if(ctype_alnum($_POST['addInput']) && ctype_alnum($_POST['postInput']) && ctype_alpha($_POST['cityInput']) && ctype_alpha($_POST['provInput'])) {
     $address['addr'] = $_POST['addInput'];
     $address['city'] = $_POST['cityInput'];

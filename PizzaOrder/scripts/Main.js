@@ -29,7 +29,30 @@ class Pizza {
         console.log(`Size: ${this.size}  Dough: ${this.dough}  Sauce: ${this.sauce} 
         Cheese: ${this.cheese} Toppings: ${this.toppings}`);
     }
+    /*Riley's Getters for use with accessing pizza information*/
+    getSize(){
+        return this.size;
+    }
+
+    getDough(){
+        return this.dough;
+    }
+
+    getSauce(){
+        return this.sauce;
+    }
+
+    getCheese(){
+        return this.cheese;
+    }
+
+    getToppings(){
+        return this.toppings;
+    }
 }
+
+var pizzaOrders = new Array();
+
 // from https://stackoverflow.com/questions/46155/how-to-validate-an-email-address-in-javascript .
 function validateEmail(email) {
     var re = /[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/;
@@ -103,8 +126,7 @@ function displayAddressPage(addressArray) {
             if(addressArray[y].appt != null){
                 adString += ` Appt: ${addressArray[y].appt}`;
             }
-            adString += `</p></br></td></tr>
-            `;
+            adString += `</p></br></td></tr>`;
         }
             adString += `<tr>
                     <td colspan="2"><p>Want to enter a new address? Do so here!</p></td>
@@ -178,6 +200,8 @@ var beginOrder = function(res) {
             displayAddressPage(); //This sorta locks the user into entering new addresses if they attempt but fail
             //could optionally add in some more code to repopulate the address fields.
         } else {
+            /* Clear any error previously displayed */
+            $("#error").html('');
             //In this case, they added a new address, so I need to actually add that to the global object.
             if(currentOrder.addressInfo == "new"){
                 currentOrder.address = res;
@@ -315,10 +339,87 @@ function toppingPage(newPizza) {
         console.log(currentOrder);
         console.log("Heres the current pizza");
         console.log(newPizza);
-        alert(newPizza.toString());
-        orderCheckPage(newPizza);
+        pizzaOrders.push(newPizza);
+        orderCheckPage();
     });
 }
-function orderCheckPage(newPizza) {
-    $("#outputDiv").html(`<h1>hey there!</h1>`);
+
+function orderCheckPage() { //ORDER CHECK PAGE - Riley
+    console.log(pizzaOrders.length);
+    var output = "<h1>Current Order Information</h1>";
+    //create the table header
+    output += "<table><tr><th>Size</th><th>Dough</th><th>Sauce</th><th>Cheese</th><th>Toppings</th></tr>";
+    //go through all the pizzas added to the order
+    for(var x = 0; x<pizzaOrders.length; ++x){ 
+        //utilize getters to get the information from each pizza
+        var size = pizzaOrders[x].getSize();
+        var dough = pizzaOrders[x].getDough();
+        var sauce = pizzaOrders[x].getSauce();
+        var cheese = pizzaOrders[x].getCheese();
+        var toppings = pizzaOrders[x].getToppings();
+        var toppings = toppings.split(".");
+        //add the information to an HTML table
+        output += "<tr><td>"+size+"</td><td>"+dough+"</td><td>"+sauce+"</td><td>"+cheese+"</td><td>";
+        for(var i = 0; i<toppings.length-1; ++i){
+            output += toppings[i]+"</br>";
+        }
+        output += "</td></tr>";
+    }
+    output += "</table>"; 
+
+    //create all the forms for the buttons
+    output += "<form id='anotherForm' name='anotherForm'> <input type='submit' id='anotherSubmit' name='anotherSubmit' value='Add Another Pizza'/> </form></br>";
+    output += "<form id='removeForm' name='removeForm'> <input type='submit' id='removeSubmit' name=removeSubmit' value='Remove then Add'/> </form></br>";
+    output += "<form id='completeWithoutForm' name='completeWithoutForm'> <input type='submit' id='completeWithoutSubmit' name='completeWithoutSubmit' value='Complete the order without the most recent pizza'></form></br>"
+    output += "<form id='completeForm' name='completeForm'> <input type='submit' id='completeSubmit' name='completeSubmit' value='Complete'/></form></br>";
+    output += "<form id='cancelForm' name='cancelForm'> <input type='submit' id='cancelSubmit' name='cancelSubmit' value='Cancel'/></form></br>";
+    $("#outputDiv").html(output); //add all the information to the HTML div
+    $("#anotherForm").submit(function(event){ //functionality for adding another pizza
+        var res = {
+            status: 'YES'
+        };
+        beginOrder(res);
+    });
+    $("#removeForm").submit(function(event){ //functionality for removing the latest pizza and adding another one
+        pizzaOrders.pop();
+        var res = {
+            status: 'YES'
+        };
+        beginOrder(res);
+    });
+    $("#completeWithoutForm").submit(function(event){ //functionality for completing without the most recent pizza
+        pizzaOrders.pop();
+        summaryPage();
+    });
+    $("#completeForm").submit(function(event){ //complete the current order
+        summaryPage();
+    });
+    $("#cancelForm").submit(function(event){ //cancel the current order and return to the main page
+        pizzaOrders.length = 0;
+        loadFirstPage();
+    });
+}
+
+function summaryPage(){
+    //summary page displaying the order - Riley
+    var output = '<h1>Summary Page</h1>'
+    output += "<table><tr><th>Size</th><th>Dough</th><th>Sauce</th><th>Cheese</th><th>Toppings</th></tr>";
+    for(var x = 0; x<pizzaOrders.length; ++x){
+        var size = pizzaOrders[x].getSize();
+        var dough = pizzaOrders[x].getDough();
+        var sauce = pizzaOrders[x].getSauce();
+        var cheese = pizzaOrders[x].getCheese();
+        var toppings = pizzaOrders[x].getToppings();
+        var toppings = toppings.split(".");
+        output += "<tr><td>"+size+"</td><td>"+dough+"</td><td>"+sauce+"</td><td>"+cheese+"</td><td>";
+        for(var i = 0; i<toppings.length-1; ++i){
+            output += toppings[i]+"</br>";
+        }
+        output += "</td></tr>";
+    }
+    output += "</table>";
+
+    //TODO: display delivery information
+    //TODO: Display options for placing or canceling order
+    $("#outputDiv").html(output);
 }

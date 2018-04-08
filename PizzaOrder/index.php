@@ -28,7 +28,7 @@ session_start();?>
     <link href="styles/style.css" rel="stylesheet"/>
     <!-- scripts -->
     <script src="http://code.jquery.com/jquery-1.11.2.min.js"></script>
-    <script src="scripts/AaronScript.js"></script>
+    <script src="scripts/Main.js"></script>
 
 </head>
 <!--start document with first JS function to load greeting page -->
