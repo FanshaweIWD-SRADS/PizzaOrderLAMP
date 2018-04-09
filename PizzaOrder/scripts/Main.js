@@ -6,6 +6,7 @@ var currentOrder = {
     //user ID - default value of -1, if this is still -1 at step 5, means that this is a new user, and will require an entry into the customer MySQL table
     "uID":-1,
     "email":" ",
+    "name":" ",
     //This holds the status of their address. Will be "default", "new", or "old". Used later to decide if an entry needs to be made into address MySQL table
     "addressInfo":{status:"default"},
     //user address info - this actually HOLDS the address they are currently using
@@ -122,14 +123,19 @@ function displayAddressPage(addressArray) {
             `;
             //add data to output
             adString += `<td><p>Address ${parseInt(y) + 1} : ${addressArray[y].addr},
-            ${addressArray[y].city}, ${addressArray[y].prov}</br> ${addressArray[y].post}`;
+            ${addressArray[y].city}, ${addressArray[y].prov}</br> ${addressArray[y].post}</br>
+            ${addressArray[y].phone}`;
             if(addressArray[y].appt != null){
                 adString += ` Appt: ${addressArray[y].appt}`;
             }
             adString += `</p></br></td></tr>`;
         }
-            adString += `<tr>
+        adString += `<tr>
                     <td colspan="2"><p>Want to enter a new address? Do so here!</p></td>
+                </tr>
+                <tr>
+                <td>Name: <input id="nameInput" name="nameInput" type="text"/></td>
+                <td>Phone #: <input id="phoneInput" name="phoneInput" type="text"/></td>
                 </tr>
                 <tr>
                     <td>Address: <input id="addInput" name="addInput" type="text"/><br/></td>
@@ -154,20 +160,23 @@ function displayAddressPage(addressArray) {
                 <td colspan="2"><h4>Please enter a new address</h4></td>
             </tr>
             <tr>
+            <td>Name: <input id="nameInput" name="nameInput" type="text"/></td>
+            <td>Phone #: <input id="phoneInput" name="phoneInput" type="text"/></td>
+            </tr>
+            <tr>
                 <td>Address: <input id="addInput" name="addInput" type="text"/><br/></td>
                 <td>City: <input id="cityInput" name="cityInput" type="text"/><br/></td>
             </tr>
             <tr>
                 <td>Prov: <input id="provInput" name="provInput" type="text"/><br/></td>
                 <td>Postal Code: <input id="postInput" name="postInput" type="text"/><br/></td>
-            </tr>
+            </tr>        
             <tr>
                 <td>Appt#(optional): <input id="apptInput" name="apptInput" type="text"/><br/></td>
                 <td><input id="subButton2" name="subButton2" type="submit"/></td>
             </tr>
         </table>
-    </FORM>`;
-
+        </FORM>`;
         $("#outputDiv").append(adString);
     }
     //AJAX here to set up submit button to move forward ALSO to initialize global object
@@ -205,6 +214,7 @@ var beginOrder = function(res) {
             //In this case, they added a new address, so I need to actually add that to the global object.
             if(currentOrder.addressInfo == "new"){
                 currentOrder.address = res;
+                currentOrder.name = res['name'];
             }
             console.log(currentOrder); //size dough sauce cheese
             $("#outputDiv").html(`<h1>Pizza Order Time!</h1>
@@ -262,7 +272,7 @@ var beginOrder = function(res) {
                 newPizza.sauce = $("#selSauce").val();
                 newPizza.cheese = $("#selCheese").val();
                 console.log("new pizza: ");
-                newPizza.toString();
+                newPizza.toString(); //shows pizza stats on console
                 toppingPage(newPizza);
             });
         }        
@@ -328,23 +338,30 @@ function toppingPage(newPizza) {
         <input type="submit" id="toppingSubmit" name="toppingSubmit" value="Submit">
     </form>`);
     $("#toppingForm").submit(function(event){
-        var items = [];
-        $( "input[type=checkbox]:checked" ).each(function(){
-            items.push($(this).val());
-        });
-        items.forEach(function(item, index){
-            newPizza.toppings += item + ".";
-        });
-        console.log("Here's the current Order:");
-        console.log(currentOrder);
-        console.log("Heres the current pizza");
-        console.log(newPizza);
-        pizzaOrders.push(newPizza);
-        orderCheckPage();
+        if($( "input[type=checkbox]:checked" ).length < 8){
+            var items = [];
+            $( "input[type=checkbox]:checked" ).each(function(){
+                items.push($(this).val());
+            });
+            items.forEach(function(item, index){
+                newPizza.toppings += item + ".";
+            });
+            console.log("Here's the current Order:");
+            console.log(currentOrder);
+            console.log("Heres the current pizza");
+            console.log(newPizza);
+            pizzaOrders.push(newPizza);
+            orderCheckPage();
+        } else {
+            $("#error").html("Please don't select more than 7 toppings.");
+            toppingPage(newPizza);
+        }
     });
 }
 
 function orderCheckPage() { //ORDER CHECK PAGE - Riley
+    /* Clear any error previously displayed */
+    $("#error").html('');
     console.log(pizzaOrders.length);
     var output = "<h1>Current Order Information</h1>";
     //create the table header

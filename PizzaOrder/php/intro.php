@@ -41,7 +41,7 @@ if ($rs->num_rows > 0) {
 
     //Set up second query to obtain address info
     $qry2 = <<<END2
-select distinct cusID, addr, city, prov, post,
+select distinct cusID, addr, city, prov, phone, post,
 appt from address where cusID = {$customerID};
 END2;
     //run query
