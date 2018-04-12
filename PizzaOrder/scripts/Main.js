@@ -437,6 +437,32 @@ function summaryPage(){
     output += "</table>";
 
     //TODO: display delivery information
+   output += "<table><tr><th>Address</th><th>City</th><th>Province</th><th>Phone</th><th>Postal Code</th></tr></th>"+
+    	"<tr><td>"+currentOrder.address.addr+"</td>" + "<td>"+currentOrder.address.city+"</td>" +
+    	"<td>"+currentOrder.address.prov+"</td>" + "<td>"+currentOrder.address.phone+"</td>" +
+    	"<td>"+currentOrder.address.post+"</td></tr></table>";
+
+
+
     //TODO: Display options for placing or canceling order
+
+    output += "<form id='placeForm' name='placeForm'> <input type='submit' id='placeSubmit' name='placeSubmit' value='Place Order'/> </form></br>";
+    output += "<form id='cancelForm' name='cancelForm'> <input type='submit' id='cancelSubmit' name=cancelSubmit' value='Cancel Order'/> </form></br>";
+
+
+
     $("#outputDiv").html(output);
+
+    $("#placeForm").submit(function(event){ //functionality for placing order
+        thankYouPage();
+    });
+
+    $("#cancelForm").submit(function(event){ //functionality for cancelling order
+        pizzaOrders.length = 0;
+        loadFirstPage();
+    });
+}
+
+function thankYouPage() {
+	$("#outputDiv").html("<h1>Thank you</h1>");
 }
