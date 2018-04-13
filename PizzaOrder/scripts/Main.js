@@ -27,7 +27,7 @@ class Pizza {
         this.toppings = " "; //we don't actually need to do anything special with toppings, so just store it as a string!
     }
     toString(){
-        console.log(`Size: ${this.size}  Dough: ${this.dough}  Sauce: ${this.sauce} 
+        return (`Size: ${this.size}  Dough: ${this.dough}  Sauce: ${this.sauce} 
         Cheese: ${this.cheese} Toppings: ${this.toppings}`);
     }
     /*Riley's Getters for use with accessing pizza information*/
@@ -59,8 +59,15 @@ function validateEmail(email) {
     var re = /[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/;
     return re.test(email);
 }
-
+/*
+    ***************************************************************************************************************
+    STEP 1
+    Document processing begins here
+    Displays first page and sets up form for user to input email address
+    ***************************************************************************************************************
+*/
 function loadFirstPage(err){
+    //using template string to set up HTML
     document.getElementById("outputDiv").innerHTML = `        <h3>Welcome!</h3>
     <p>Thanks for choosing our store! <br><br>Please enter your email address below to begin placing your order!</p>
     <FORM method="POST" id="introForm">
@@ -74,41 +81,44 @@ function loadFirstPage(err){
     $("#introForm").submit(function(event){
         //add logic here to test for if user entered no email address or invalid, to reload page, else run below
         if(validateEmail($("#emailInput").val())) {
+            console.log("Good email");
             currentOrder.email = $("#emailInput").val();
             $.post("php/intro.php", $(this).serialize(), onEntry);
             event.preventDefault();
-        }
-        else {
+        } else {
             //looks like they entered an invalid email address
-            //NANIIIII!?!?!!
             console.log("Bad email...");
             var err = true;
             loadFirstPage(err);
         }
     });
 }
-var onEntry = function(response){
- if(response.status == "None"){
-   displayAddressPage();
- } else {
-    var addressArray = [];
-    //$("#outputDiv").append(response.status);
-    //$("#test").append(response.addresses[0].addr);
-    for (var x in response.addresses) {
-        //$("#error").append(JSON.stringify(response.addresses[x]));
-        addressArray.push(JSON.stringify(response.addresses[x]));
+//After a user inputs a valid email address and the check for stored addresses is complete, this will run
+var onEntry = function(response) {
+    //if they are a new customer
+    if(response.status == "None") {
+    displayAddressPage();
+    //if they are a returning customer, process the addresses from database and set them up to be displayed to the user.
+    } else {
+        var addressArray = [];
+        for (var x in response.addresses) {
+            addressArray.push(JSON.stringify(response.addresses[x]));
+        }
+        displayAddressPage(addressArray);
     }
-    //$("#test").append(addressArray);
-    displayAddressPage(addressArray);
- }
 };
-
+/*
+    ***************************************************************************************************************
+    STEP 2
+    Displays second page and sets up form for user to select or enter an address
+    ***************************************************************************************************************
+*/
 function displayAddressPage(addressArray) {
     //clear old page from output
     $("#outputDiv").html(" ");
     //show user previous used addresses associated with their email, as well as address entry form
     var adString = "";
-    if(typeof(addressArray) !== 'undefined'){
+    if(typeof(addressArray) !== 'undefined') {
         adString += `<h2>Looks like you're a repeat customer!</h2>
         </br><h4>Please select a previously used address from below, or enter a new one</h4>
         <FORM method="POST" id="addressForm">
@@ -125,7 +135,7 @@ function displayAddressPage(addressArray) {
             adString += `<td><p>Address ${parseInt(y) + 1} : ${addressArray[y].addr},
             ${addressArray[y].city}, ${addressArray[y].prov}</br> ${addressArray[y].post}</br>
             ${addressArray[y].phone}`;
-            if(addressArray[y].appt != null){
+            if(addressArray[y].appt != null) {
                 adString += ` Appt: ${addressArray[y].appt}`;
             }
             adString += `</p></br></td></tr>`;
@@ -152,8 +162,7 @@ function displayAddressPage(addressArray) {
             </table>
         </FORM>`;
         $("#outputDiv").append(adString);
-    } else { //else if no previous addresses set, show user just address entry form
-        //output code
+    } else { //else if no previous addresses set, only show user the address entry form
         adString += `<FORM method="POST" id="addressForm">
         <table id="addTable" name="addTable">
             <tr>
@@ -182,40 +191,44 @@ function displayAddressPage(addressArray) {
     //AJAX here to set up submit button to move forward ALSO to initialize global object
     $("#addressForm").submit(function(event){
         console.log("submitting address!");
+        //check if user selected a previously used address
         var selAddress = $("input[name='addressRad']:checked").val();
         if(selAddress !== undefined){
             currentOrder.address = addressArray[selAddress];
+            console.log("User selected old address");
             console.log(addressArray[selAddress]);
             currentOrder.addressInfo = "old";
             beginOrder({status:"selectedAddress"});
-        } else {
-            //post php
+        //if user entered a new address
+        } else {            
             currentOrder.addressInfo = "new";
             console.log("going to address.php");
             $.post("php/address.php", $(this).serialize(), beginOrder);
             event.preventDefault();
         }
     });
-    //AJAX here so radio buttons send selected address to global object
 }
-//Step 3
+/*
+    ***************************************************************************************************************
+    STEP 3
+    Displays third page and sets up form for user to make initial pizza selections
+    ***************************************************************************************************************
+*/
 var beginOrder = function(res) {
-    console.log("back from address.php or sel");
     if (typeof(res) !== undefined) {
         //User added new address, make global object change - address to response data
-        console.log(res['status']);
         if(res.status == "Invalid") {
             $("#error").html(`<h4 class="errortext">Please enter a valid address!</h4>`);
-            displayAddressPage(); //This sorta locks the user into entering new addresses if they attempt but fail
-            //could optionally add in some more code to repopulate the address fields.
+            displayAddressPage(); //This  locks the user into entering new addresses if they attempt but fail
         } else {
             /* Clear any error previously displayed */
             $("#error").html('');
-            //In this case, they added a new address, so I need to actually add that to the global object.
-            if(currentOrder.addressInfo == "new"){
+            //User added a new address, so add that to the global object.
+            if(currentOrder.addressInfo == "new") {
                 currentOrder.address = res;
                 currentOrder.name = res['name'];
             }
+            console.log("User's Pizza so far");
             console.log(currentOrder); //size dough sauce cheese
             $("#outputDiv").html(`<h1>Pizza Order Time!</h1>
         <h3>Please select one of each option below!</h3>
@@ -265,24 +278,34 @@ var beginOrder = function(res) {
         <br/>
         <input type="submit" id="opSubmit" name="opSubmit" value="Submit">
     </form>`);
+            //JQuery to set up submit event
             $("#pizzaForm").submit(function(event){
+                //set up new pizza with selected values. User can only select from options available, so there are no
+                //potential invalid inputs.
                 var newPizza = new Pizza();
                 newPizza.size = $("#selSize").val();
                 newPizza.dough = $("#selDough").val();
                 newPizza.sauce = $("#selSauce").val();
                 newPizza.cheese = $("#selCheese").val();
                 console.log("new pizza: ");
-                newPizza.toString(); //shows pizza stats on console
+                console.log(newPizza.toString()); //shows pizza stats on console
                 toppingPage(newPizza);
             });
-        }        
+        }   
+    //This shouldn't ever run     
     } else {
-        console.log("NANI! ... well, this is what I have");
+        console.log("We've entered strange coding territory. Here, take this!");
         console.log(currentOrder);
     }    
 }
-//Step 4
+/*
+    ***************************************************************************************************************
+    STEP 4
+    Displays fourth page and sets up form for user to add toppings to their current pizza
+    ***************************************************************************************************************
+*/
 function toppingPage(newPizza) {
+    //set up output
     $("#outputDiv").html(`
     <h1>Pizza Order Time!</h1>
     <h3>Please select up to 7 toppings below!</h3>
@@ -337,8 +360,10 @@ function toppingPage(newPizza) {
         <br/>
         <input type="submit" id="toppingSubmit" name="toppingSubmit" value="Submit">
     </form>`);
+    //JQuery to set up submit event
     $("#toppingForm").submit(function(event){
-        if($( "input[type=checkbox]:checked" ).length < 8){
+        //check if user selected a valid number of toppings
+        if($( "input[type=checkbox]:checked" ).length < 8) {
             var items = [];
             $( "input[type=checkbox]:checked" ).each(function(){
                 items.push($(this).val());
@@ -352,15 +377,21 @@ function toppingPage(newPizza) {
             console.log(newPizza);
             pizzaOrders.push(newPizza);
             orderCheckPage();
+        //if user selected too many toppings
         } else {
             $("#error").html("Please don't select more than 7 toppings.");
             toppingPage(newPizza);
         }
     });
 }
-
+/*
+    ***************************************************************************************************************
+    STEP 5
+    Displays fifth page and sets up form for user to choose where they want to go from here
+    ***************************************************************************************************************
+*/
 function orderCheckPage() { //ORDER CHECK PAGE - Riley
-    /* Clear any error previously displayed */
+    // Clear any error previously displayed
     $("#error").html('');
     console.log(pizzaOrders.length);
     var output = "<h1>Current Order Information</h1>";
@@ -416,7 +447,12 @@ function orderCheckPage() { //ORDER CHECK PAGE - Riley
         loadFirstPage();
     });
 }
-
+/*
+    ***************************************************************************************************************
+    STEP 6
+    Displays sixth page and sets up form for user to see their order so far and decide to place or not
+    ***************************************************************************************************************
+*/
 function summaryPage(){
     //summary page displaying the order - Riley
     var output = '<h1>Summary Page</h1>'
@@ -442,27 +478,50 @@ function summaryPage(){
     	"<td>"+currentOrder.address.prov+"</td>" + "<td>"+currentOrder.address.phone+"</td>" +
     	"<td>"+currentOrder.address.post+"</td></tr></table>";
 
-
-
     //TODO: Display options for placing or canceling order
-
     output += "<form id='placeForm' name='placeForm'> <input type='submit' id='placeSubmit' name='placeSubmit' value='Place Order'/> </form></br>";
     output += "<form id='cancelForm' name='cancelForm'> <input type='submit' id='cancelSubmit' name=cancelSubmit' value='Cancel Order'/> </form></br>";
-
-
 
     $("#outputDiv").html(output);
 
     $("#placeForm").submit(function(event){ //functionality for placing order
-        thankYouPage();
+        currentOrder.pizzas = pizzaOrders.slice();
+        $.post("php/placeOrder.php", currentOrder, finishOrder);
+        //thankYouPage();
     });
 
     $("#cancelForm").submit(function(event){ //functionality for cancelling order
+        //reset pizzas and current order
         pizzaOrders.length = 0;
+        currentOrder = {
+            "uID":-1,
+            "email":" ",
+            "name":" ",
+            "addressInfo":{status:"default"},
+            "address":" ",
+            "pizzas":[]
+        };
         loadFirstPage();
     });
 }
-
-function thankYouPage() {
-	$("#outputDiv").html("<h1>Thank you</h1>");
+var add_minutes =  function (dt, minutes) {
+    return new Date(dt.getTime() + minutes*60000);
 }
+/*
+    ***************************************************************************************************************
+    STEP 7
+    Displays final page
+    ***************************************************************************************************************
+*/
+var finishOrder = function(res) {
+    var time = add_minutes(new Date(), 30);
+    
+    console.log(time.getHours() + ":" + time.getMinutes() + ":" + time.getSeconds());
+    $("#outputDiv").html(`<h1>Thank you!</h1>
+    <h3>We appreciate your patronage!</h3>
+    <p>Your order number is: ${res.order}
+    Thankfully we have locations in many places! Your order should be delivered 25 minutes after: ${time.getHours()}:${time.getMinutes()}:${time.getSeconds()}</p>
+    If you really love our site, feel free to place another order <a href="index.php">here</a>!
+    `);
+}
+

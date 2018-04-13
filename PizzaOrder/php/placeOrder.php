@@ -1,9 +1,8 @@
 <?php
 /**
- * PizzaOrder Project - Intro.php
+ * PizzaOrder Project - placeOrder.php
  *
- * This file runs the MySQL queries needed to test if a given user email
- * has been used in the history of our store.
+ * This file runs the MySQL queries needed to save user input to the database
  *
  * PHP version 7
  *
@@ -19,6 +18,7 @@
  * @link     N/A
  * @since    Class available since Release 1.0
  */
+//STILL TO BE COMPLETED!
 header("Content-Type: application/json");
 $db_conn = connect_db();
 //set up query to get cusID using email (Heredoc format)
