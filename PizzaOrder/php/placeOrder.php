@@ -23,49 +23,84 @@ header("Content-Type: application/json");
 $db_conn = connect_db();
 //set up query to get cusID using email (Heredoc format)
 $qry = <<<END
-select cusID from customer where email = "{$_POST['emailInput']}";
+select cusID from customer where cusID = "{$currentOrder->uID}";
 END;
 //run query
 $rs = $db_conn->query($qry);
 //if the result is a row from the customer table, set up second query.
 //else return JSON with failure status
-if ($rs->num_rows > 0) {
-    $id = array("status" => "OK");
-    while ($row = $rs->fetch_assoc()) {
-        array_push($id, $row);
-    }
-    //obtain customer ID from result of first query
-    $customerID = $id[0]['cusID'];
+if ($rs->num_rows = 0) {
+    // $id = array("status" => "OK");
+    // while ($row = $rs->fetch_assoc()) {
+    //     array_push($id, $row);
+    // }
+    // //obtain customer ID from result of first query
+    // $customerID = $id[0]['cusID'];
     //echo json_encode($id);
     //LOOKS LIKE: {"status":"OK","0":{"cusID":"2"}}
 
     //Set up second query to obtain address info
     $qry2 = <<<END2
-select distinct cusID, addr, city, prov, phone, post,
-appt from address where cusID = {$customerID};
+insert into customer (cusID, name, email)
+values ({$currentOrder->uID}, {$currentOrder->name}, {$currentOrder->email});
 END2;
     //run query
     $rs2 = $db_conn->query($qry2);
-    if ($rs2->num_rows > 0) {
-        $addresses = array("status" => "OK");
-        $addresses['addresses'] = array();
-        while ($row2 = $rs2->fetch_assoc()) {
-            array_push($addresses['addresses'], $row2);
-        }
-        //output address data to JavaScript code
-        echo json_encode($addresses);
-        /*LOOKS LIKE: {"status":"OK",
-        "addresses":[{"addr":"12 Electric Avenue",
-        "city":"Austin","prov":"Texas","post":"N6H 2B5","appt":null},
-        {"addr":"98 Crowd Street","city":"Austin",
-        "prov":"Texas","post":"N6H 2B5","appt":"820"}]}*/
+}
+if($currentOrder->addressInfo == "new") {
+    //insert address
+    if(isset($currentOrder->address->appt)){
+        $qry3 = <<<END3
+insert into address (cusID, addr, city, prov, post, phone, appt)
+values ($currentOrder->uID, $currentOrder->address[addr], $currentOrder->address[city]
+, $currentOrder->address[prov], $currentOrder->address[post], 
+$currentOrder->address[phone], $currentOrder->address[appt]);
+END3;
+    } else {
+        $qry3 = <<<END3
+insert into address (cusID, addr, city, prov, post, phone)
+values ($currentOrder->uID, $currentOrder->address[addr], $currentOrder->address[city]
+, $currentOrder->address[prov], $currentOrder->address[post], 
+$currentOrder->address[phone]);
+END3;
     }
-} else {
-    //Sent back default if new email
-    echo '{ "status": "None" }';
+}
+//run query
+$rs3 = $db_conn->query($qry3);
+//select addressId
+$qry4 = <<<END4
+select addrID from address where cusID = "{$currentOrder->uID}";
+END4;
+//run query
+$rs4 = $db_conn->query($qry4);
+$addrID = $rs4->fetch_assoc();
+//insert order
+$qry5 = <<<END5
+insert into order (cusID, addrID)
+values ({$currentOrder->uID}, {$currrentOrder->addrID});
+END5;
+//run query
+$rs5 = $db_conn->query($qry5);
+//select orderId
+$qry6 = <<<END6
+select orderID from orders where cusID = "{$currentOrder->uID}";
+END6;
+$orderID = $rs6->fetch_assoc();
+//insert pizzas
+$myfile = fopen("php/testfile.txt", "w");
+
+foreach($currentOrder->pizzas as $selPizza) {
+    $qry7 = <<<END7
+insert into pizza (orderID, size, dough, sauce, cheese, toppings)
+values ($orderID, {$selPizza->size}, {$selPizza->dough}, 
+{$selPizza->sauce}, {$selPizza->cheese}, {$selPizza->toppings});
+END7;
+    $rs7 = $db_conn->query($qry7);
+    fwrite($myfile, $qry7);
 }
 disconnect_db($db_conn);
-
+//output order number
+echo $orderID;
 /**
  * Connect to database
  *
