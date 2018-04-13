@@ -464,7 +464,7 @@ function orderCheckPage() { //ORDER CHECK PAGE - Riley
 function summaryPage(){
     //summary page displaying the order - Riley
     var output = '<h1>Summary Page</h1>'
-    output += "<table><tr><th>Size</th><th>Dough</th><th>Sauce</th><th>Cheese</th><th>Toppings</th></tr>";
+    output += `<table><tr><th>Size</th><th>Dough</th><th>Sauce</th><th>Cheese</th><th>Toppings</th></tr>`;
     for(var x = 0; x<pizzaOrders.length; ++x){
         var size = pizzaOrders[x].getSize();
         var dough = pizzaOrders[x].getDough();
@@ -472,7 +472,7 @@ function summaryPage(){
         var cheese = pizzaOrders[x].getCheese();
         var toppings = pizzaOrders[x].getToppings();
         var toppings = toppings.split(".");
-        output += "<tr><td>"+size+"</td><td>"+dough+"</td><td>"+sauce+"</td><td>"+cheese+"</td><td>";
+        output += `<tr><td id="size${x}" name="size${x}">${size}</td><td id="dough${x}" name="dough${x}">${dough}</td><td id="sauce${x}" name="sauce${x}">${sauce}</td><td id="size${x}" name="cheese${x}">${cheese}</td><td id="toppings${x}" name="toppings${x}">`;
         for(var i = 0; i<toppings.length-1; ++i){
             output += toppings[i]+"</br>";
         }
@@ -482,26 +482,52 @@ function summaryPage(){
 
     var time = add_minutes(new Date(), 30);
     output += "<h2>Your order will be delivered at: "+time+" to the following address...</h2>";
-
+    
     //TODO: display delivery information
     output += "<table><tr><th>Address</th><th>City</th><th>Province</th><th>Phone</th><th>Postal Code</th></tr></th>"+
-    	"<tr><td>"+currentOrder.address.addr+"</td>" + "<td>"+currentOrder.address.city+"</td>" +
-    	"<td>"+currentOrder.address.prov+"</td>" + "<td>"+currentOrder.address.phone+"</td>" +
-    	"<td>"+currentOrder.address.post+"</td></tr></table>";
+    	"<tr><td id=\"addr\" name=\"addr\">"+currentOrder.address.addr+"</td>" + "<td id= \"name\" name=\"city\">"+currentOrder.address.city+"</td>" +
+    	"<td id= \"prov\" name=\"prov\">"+currentOrder.address.prov+"</td>" + "<td id= \"phone\" name=\"phone\">"+currentOrder.address.phone+"</td>" +
+        "<td id= \"post\" name=\"post\">"+currentOrder.address.post+"</td>";
+    if(currentOrder.address.appt) {
+        output += "<td id= \"appt\" name=\"appt\">"+currentOrder.address.appt+"</td>";
+    }
+    output += "</tr></table>";
+
+    output += `<form id='placeForm' name='placeForm'><div><input type='text' id="cID" name="cID" value="${currentOrder.uID}"/>
+    <input type='text' id="cName" name="cName" value="${currentOrder.name}"/>
+    <input type='text' id="cEmail" name="cEmail" value="${currentOrder.email}"/>
+    <input type='text' id="cInfo" name="cInfo" value="${currentOrder.addressInfo}"/></div>`;
+
+    output += "<input id='addr' name='addr' value='"+currentOrder.address.addr+"'/><input type='text' id= 'name' name='city' value='"+currentOrder.address.city+"'><input type='text' id= 'prov' name='prov' value='"+currentOrder.address.prov+"'/><input type='text' id='phone' name='phone' value='"+currentOrder.address.phone+"'/><input type='text' id= 'post' name='post' value='"+currentOrder.address.post+"'/>";
+    if(currentOrder.address.appt) {
+        output += "<input type='text' id= 'appt' name='appt'value='"+currentOrder.address.appt+"'/>";
+    }
+    for(var x = 0; x<pizzaOrders.length; ++x){
+        var size = pizzaOrders[x].getSize();
+        var dough = pizzaOrders[x].getDough();
+        var sauce = pizzaOrders[x].getSauce();
+        var cheese = pizzaOrders[x].getCheese();
+        var toppings = pizzaOrders[x].getToppings();
+        output += `<input type="text" id="size${x}" name="size${x}" value="${size}"><input type="text" id="dough${x}" name="dough${x}" value="${dough}"><input type="text" id="sauce${x}" name="sauce${x}" value="${sauce}"><input type="text" id="cheese${x}" name="cheese${x}" value="${cheese}"><input type="text" id="toppings${x}" name="toppings${x}" value="${toppings}"/>`; 
+ 
+    }
 
     //TODO: Display options for placing or canceling order
-    output += "<form id='placeForm' name='placeForm'> <input type='submit' id='placeSubmit' name='placeSubmit' value='Place Order'/> </form></br>";
+    output += "<input type='submit' id='placeSubmit' name='placeSubmit' value='Place Order'/> </form></br>";
     output += "<form id='cancelForm' name='cancelForm'> <input type='submit' id='cancelSubmit' name=cancelSubmit' value='Cancel Order'/> </form></br>";
 
     $("#outputDiv").html(output);
 
     $("#placeForm").submit(function(event){ //functionality for placing order
         currentOrder.pizzas = pizzaOrders.slice();
-        $.post("php/placeOrder.php", currentOrder, finishOrder);
+        $.post("php/placeOrder.php", $(this).serialize(), testt);//finishOrder
         event.preventDefault;
         //thankYouPage();
     });
-
+    function testt(stuff) {
+        console.log(stuff);
+        alert(stuff);
+    }
     $("#cancelForm").submit(function(event){ //functionality for cancelling order
         //reset pizzas and current order
         pizzaOrders.length = 0;
@@ -531,10 +557,10 @@ var finishOrder = function(res) {
     
     console.log(time.getHours() + ":" + time.getMinutes() + ":" + time.getSeconds());
     $("#outputDiv").html(`<h1>Thank you!</h1>
-    <h3>We appreciate your patronage!</h3>
-    <p>Your order number is: ${res.order}
-    Thankfully we have locations in many places! Your order should be delivered 25 minutes after: ${time.getHours()}:${time.getMinutes()}:${time.getSeconds()}</p>
-    If you really love our site, feel free to place another order <a href="index.php">here</a>!
+<h3>We appreciate your patronage!</h3>
+<p>Your order number is: ${res.order}
+Thankfully we have locations in many places! Your order should be delivered 25 minutes after: ${time.getHours()}:${time.getMinutes()}:${time.getSeconds()}</p>
+If you really love our site, feel free to place another order <a href="index.php">here</a>!
     `);
 }
 

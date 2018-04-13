@@ -18,89 +18,81 @@
  * @link     N/A
  * @since    Class available since Release 1.0
  */
-//STILL TO BE COMPLETED!
 header("Content-Type: application/json");
 $db_conn = connect_db();
+
 //set up query to get cusID using email (Heredoc format)
-$qry = <<<END
-select cusID from customer where cusID = "{$currentOrder->uID}";
-END;
+$qry = "select cusID from customer where cusID = ".$_POST['cID'].";";
 //run query
 $rs = $db_conn->query($qry);
-//if the result is a row from the customer table, set up second query.
-//else return JSON with failure status
-if ($rs->num_rows = 0) {
-    // $id = array("status" => "OK");
-    // while ($row = $rs->fetch_assoc()) {
-    //     array_push($id, $row);
-    // }
-    // //obtain customer ID from result of first query
-    // $customerID = $id[0]['cusID'];
-    //echo json_encode($id);
-    //LOOKS LIKE: {"status":"OK","0":{"cusID":"2"}}
 
-    //Set up second query to obtain address info
-    $qry2 = <<<END2
-insert into customer (cusID, name, email)
-values ({$currentOrder->uID}, {$currentOrder->name}, {$currentOrder->email});
-END2;
+if (!isset($rs->num_rows)) {
+    $qry2 = "insert into customer (name, email) values (".$_POST['cName']."', '".$_POST['cEmail']."');";
     //run query
     $rs2 = $db_conn->query($qry2);
 }
-if($currentOrder->addressInfo == "new") {
+$id = 0;
+if($_POST['cInfo'] == "new") {
+    $qry = "select cusID from customer where email = ".$_POST['cEmail'].";";
+    //run query
+    $rs = $db_conn->query($qry);
+    $id = $rs->fetch_assoc();
     //insert address
-    if(isset($currentOrder->address->appt)){
+    if(isset($_POST['appt'])){
         $qry3 = <<<END3
 insert into address (cusID, addr, city, prov, post, phone, appt)
-values ($currentOrder->uID, $currentOrder->address[addr], $currentOrder->address[city]
-, $currentOrder->address[prov], $currentOrder->address[post], 
-$currentOrder->address[phone], $currentOrder->address[appt]);
+values ({$id}, {$_POST['addr']}, {$_POST['city']}
+, {$_POST['prov']}, {$_POST['post']}, 
+{$_POST['phone']}, {$_POST['appt']});
 END3;
     } else {
         $qry3 = <<<END3
 insert into address (cusID, addr, city, prov, post, phone)
-values ($currentOrder->uID, $currentOrder->address[addr], $currentOrder->address[city]
-, $currentOrder->address[prov], $currentOrder->address[post], 
-$currentOrder->address[phone]);
+values ({$_POST['cID']}, {$_POST['addr']}, {$_POST['city']}
+, {$_POST['prov']}, {$_POST['post']}, 
+{$_POST['phone']});
 END3;
     }
+    //run query
+    $rs3 = $db_conn->query($qry3);
+
 }
-//run query
-$rs3 = $db_conn->query($qry3);
+
 //select addressId
 $qry4 = <<<END4
-select addrID from address where cusID = "{$currentOrder->uID}";
+select addrID from address where cusID = "{$id}";
 END4;
+
 //run query
 $rs4 = $db_conn->query($qry4);
 $addrID = $rs4->fetch_assoc();
 //insert order
 $qry5 = <<<END5
 insert into order (cusID, addrID)
-values ({$currentOrder->uID}, {$currrentOrder->addrID});
+values ({$id}, {$addrID});
 END5;
 //run query
 $rs5 = $db_conn->query($qry5);
 //select orderId
 $qry6 = <<<END6
-select orderID from orders where cusID = "{$currentOrder->uID}";
+select orderID from orders where cusID = "{$id}";
 END6;
+$rs6 = $db_conn->query($qry6);
 $orderID = $rs6->fetch_assoc();
 //insert pizzas
-$myfile = fopen("php/testfile.txt", "w");
+// $iterator = 0;
+// while(isset($_POST['size'.$iterator])) {
+//     $qry7 = "insert into pizza (orderID, size) values (".$orderID.", '".$_POST['size'.$iterator]."');";
 
-foreach($currentOrder->pizzas as $selPizza) {
-    $qry7 = <<<END7
-insert into pizza (orderID, size, dough, sauce, cheese, toppings)
-values ($orderID, {$selPizza->size}, {$selPizza->dough}, 
-{$selPizza->sauce}, {$selPizza->cheese}, {$selPizza->toppings});
-END7;
-    $rs7 = $db_conn->query($qry7);
-    fwrite($myfile, $qry7);
-}
+//     $rs7 = $db_conn->query($qry7);
+//     $iterator++;
+// }
+//, dough, sauce, cheese, toppings
+//, "$_POST['dough'$iterator]", "$_POST['sauce'$iterator]", "$_POST['cheese'$iterator]", "$_POST['toppings'$iterator]"
 disconnect_db($db_conn);
 //output order number
-echo $orderID;
+
+echo `{ "order": "{$orderID}" }`;
 /**
  * Connect to database
  *

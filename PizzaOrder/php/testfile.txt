@@ -1,0 +1,5 @@
+select cusID from customer where cusID = -1;
+insert into address (cusID, addr, city, prov, post, phone, appt)
+values (-1, 124 nwoen steret, London
+, Ontario, N6HB9K, 
+1112223333, );select addrID from address where cusID = "-1";
