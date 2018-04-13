@@ -224,7 +224,7 @@ var beginOrder = function(res) {
             /* Clear any error previously displayed */
             $("#error").html('');
             //User added a new address, so add that to the global object.
-            if(currentOrder.addressInfo == "new") {
+            if(currentOrder.addressInfo == "new" && res.status != "REPEAT") {
                 currentOrder.address = res;
                 currentOrder.name = res['name'];
             }
@@ -424,14 +424,14 @@ function orderCheckPage() { //ORDER CHECK PAGE - Riley
     $("#outputDiv").html(output); //add all the information to the HTML div
     $("#anotherForm").submit(function(event){ //functionality for adding another pizza
         var res = {
-            status: 'YES'
+            status: 'REPEAT'
         };
         beginOrder(res);
     });
     $("#removeForm").submit(function(event){ //functionality for removing the latest pizza and adding another one
         pizzaOrders.pop();
         var res = {
-            status: 'YES'
+            status: 'REPEAT'
         };
         beginOrder(res);
     });
@@ -444,6 +444,14 @@ function orderCheckPage() { //ORDER CHECK PAGE - Riley
     });
     $("#cancelForm").submit(function(event){ //cancel the current order and return to the main page
         pizzaOrders.length = 0;
+        currentOrder = {
+            "uID":-1,
+            "email":" ",
+            "name":" ",
+            "addressInfo":{status:"default"},
+            "address":" ",
+            "pizzas":[]
+        };
         loadFirstPage();
     });
 }
@@ -472,8 +480,11 @@ function summaryPage(){
     }
     output += "</table>";
 
+    var time = add_minutes(new Date(), 30);
+    output += "<h2>Your order will be delivered at: "+time+" to the following address...</h2>";
+
     //TODO: display delivery information
-   output += "<table><tr><th>Address</th><th>City</th><th>Province</th><th>Phone</th><th>Postal Code</th></tr></th>"+
+    output += "<table><tr><th>Address</th><th>City</th><th>Province</th><th>Phone</th><th>Postal Code</th></tr></th>"+
     	"<tr><td>"+currentOrder.address.addr+"</td>" + "<td>"+currentOrder.address.city+"</td>" +
     	"<td>"+currentOrder.address.prov+"</td>" + "<td>"+currentOrder.address.phone+"</td>" +
     	"<td>"+currentOrder.address.post+"</td></tr></table>";
@@ -487,6 +498,7 @@ function summaryPage(){
     $("#placeForm").submit(function(event){ //functionality for placing order
         currentOrder.pizzas = pizzaOrders.slice();
         $.post("php/placeOrder.php", currentOrder, finishOrder);
+        event.preventDefault;
         //thankYouPage();
     });
 
@@ -514,6 +526,7 @@ var add_minutes =  function (dt, minutes) {
     ***************************************************************************************************************
 */
 var finishOrder = function(res) {
+    alert("finishing order");
     var time = add_minutes(new Date(), 30);
     
     console.log(time.getHours() + ":" + time.getMinutes() + ":" + time.getSeconds());
