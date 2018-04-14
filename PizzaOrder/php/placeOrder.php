@@ -18,81 +18,107 @@
  * @link     N/A
  * @since    Class available since Release 1.0
  */
-header("Content-Type: application/json");
+
+
+ // Riley's SQL Logic
+ // Checks if the address is new or not
+ // inserts into the database accordingly
 $db_conn = connect_db();
-
-//set up query to get cusID using email (Heredoc format)
-$qry = "select cusID from customer where cusID = ".$_POST['cID'].";";
-//run query
-$rs = $db_conn->query($qry);
-
-if (!isset($rs->num_rows)) {
-    $qry2 = "insert into customer (name, email) values (".$_POST['cName']."', '".$_POST['cEmail']."');";
-    //run query
-    $rs2 = $db_conn->query($qry2);
-}
-$id = 0;
-if($_POST['cInfo'] == "new") {
-    $qry = "select cusID from customer where email = ".$_POST['cEmail'].";";
-    //run query
-    $rs = $db_conn->query($qry);
-    $id = $rs->fetch_assoc();
-    //insert address
-    if(isset($_POST['appt'])){
-        $qry3 = <<<END3
-insert into address (cusID, addr, city, prov, post, phone, appt)
-values ({$id}, {$_POST['addr']}, {$_POST['city']}
-, {$_POST['prov']}, {$_POST['post']}, 
-{$_POST['phone']}, {$_POST['appt']});
-END3;
-    } else {
-        $qry3 = <<<END3
-insert into address (cusID, addr, city, prov, post, phone)
-values ({$_POST['cID']}, {$_POST['addr']}, {$_POST['city']}
-, {$_POST['prov']}, {$_POST['post']}, 
-{$_POST['phone']});
-END3;
+$cusId = 0;
+$addrId = 0;
+$orderId = 0;
+if($_POST['cInfo'] != "new"){ //check if the user is using a new or old address
+    $qry = "select cusID from customer where cusID = ".$_POST['cID'].";"; //grab the Id to double check
+    if($result = $db_conn->query($qry)){
+        if($result->num_rows > 0){
+            $row = $result->fetch_assoc();
+            $cusId = $row['cusID'];
+            $addr = $_POST['addr'];
+            $qry = "select addrID from address where cusID = '".$cusId."' AND addr = '".$addr."';"; //grab the address ID based on the customer Id and the address itself
+            if($result = $db_conn->query($qry)){
+                if($result->num_rows > 0){
+                    $row = $result->fetch_assoc();
+                    $addrId = $row['addrID'];
+                    $qry ="insert into orders (cusID,addrID) values('".$cusId."','".$addrId."');"; //create a new order with the customerId and the addressId
+                    $db_conn->query($qry);
+                    $qry ="select orderID from orders where cusID ='".$cusId."' AND addrID ='".$addrId."';"; //select all orders that are for that customer and address
+                    if($result = $db_conn->query($qry)){
+                        if($result->num_rows > 0){
+                            while($row = $result->fetch_assoc()){ //get the latest order number (the one just created)
+                                $orderId = $row['orderID'];
+                            }
+                            $counter = $_POST['counter'];
+                            //Add every pizza to the database
+                            for($i = 0; $i<$counter; $i++){
+                                $size = $_POST['size'.$i];
+                                $dough = $_POST['dough'.$i];
+                                $sauce = $_POST['sauce'.$i];
+                                $cheese = $_POST['cheese'.$i];
+                                $toppings = $_POST['toppings'.$i];
+                                $qry = "insert into pizza (orderID,size,dough,sauce,cheese,toppings) values('".$orderId."','".$size."','".$dough."','".$sauce."','".$cheese."','".$toppings."');";
+                                $db_conn->query($qry);
+                            }
+                            echo `{ "order": "{$orderId}" }`; //THIS IS WHERE IT SHOULD GOTO THE LAST PAGE
+                        }
+                    }
+                }
+            }
+        }
     }
-    //run query
-    $rs3 = $db_conn->query($qry3);
-
+}else{ //if its a new address
+    $qry = "insert into customer (name,email) values('".$_POST['cName']."', '".$_POST['cEmail']."');"; //adds customer to database
+    $db_conn->query($qry);
+    $qry = "select cusID from customer where name = '".$_POST['cName']."' AND email = '".$_POST['cEmail']."';"; //get the newly created customer's Id
+    if($result = $db_conn->query($qry)){
+        if($result->num_rows > 0){
+            $row = $result->fetch_assoc();
+            $cusId = $row['cusID'];
+            $addr = $_POST['addr'];
+            $city = $_POST['city'];
+            $prov = $_POST['prov'];
+            $post = $_POST['post'];
+            $phone = $_POST['phone'];
+            if(isset($_POST['appt'])){ //check if they have an appartment number
+                $apt = $_POST['appt'];
+                $qry = "insert into address (cusID, addr, city, prov, post, phone,appt) values('".$cusId."','".$addr."','".$city."','".$prov."','".$post."','".$phone."','".$apt."');";
+                $db_conn->query($qry);
+            }else{
+                $qry = "insert into address (cusID, addr, city, prov, post, phone) values('".$cusId."','".$addr."','".$city."','".$prov."','".$post."','".$phone."');";
+                $db_conn->query($qry);
+            }
+            $qry = "select addrID from address where cusID = '".$cusId."' AND addr = '".$addr."';"; //grab the address ID for the newly made address
+            if($result = $db_conn->query($qry)){
+                if($result->num_rows > 0){
+                    $row = $result->fetch_assoc();
+                    $addrId = $row['addrID'];
+                    $qry ="insert into orders (cusID,addrID) values('".$cusId."','".$addrId."');"; //create a new order with the customer id and address id
+                    $db_conn->query($qry);
+                    $qry ="select orderID from orders where cusID ='".$cusId."' AND addrID ='".$addrId."';"; //grab that new order's ID
+                    if($result = $db_conn->query($qry)){
+                        if($result->num_rows > 0){
+                            $row = $result->fetch_assoc();
+                            $orderId = $row['orderID'];
+                            $counter = $_POST['counter'];
+                            //insert each pizza into the table
+                            for($i = 0; $i<$counter; $i++){
+                                $size = $_POST['size'.$i];
+                                $dough = $_POST['dough'.$i];
+                                $sauce = $_POST['sauce'.$i];
+                                $cheese = $_POST['cheese'.$i];
+                                $toppings = $_POST['toppings'.$i];
+                                $qry = "insert into pizza (orderID,size,dough,sauce,cheese,toppings) values('".$orderId."','".$size."','".$dough."','".$sauce."','".$cheese."','".$toppings."');";
+                                $db_conn->query($qry);
+                            }
+                            echo `{ "order": "{$orderId}" }`; //THIS IS WHERE IT SHOULD GOTO THE LAST PAGE
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
-//select addressId
-$qry4 = <<<END4
-select addrID from address where cusID = "{$id}";
-END4;
 
-//run query
-$rs4 = $db_conn->query($qry4);
-$addrID = $rs4->fetch_assoc();
-//insert order
-$qry5 = <<<END5
-insert into order (cusID, addrID)
-values ({$id}, {$addrID});
-END5;
-//run query
-$rs5 = $db_conn->query($qry5);
-//select orderId
-$qry6 = <<<END6
-select orderID from orders where cusID = "{$id}";
-END6;
-$rs6 = $db_conn->query($qry6);
-$orderID = $rs6->fetch_assoc();
-//insert pizzas
-// $iterator = 0;
-// while(isset($_POST['size'.$iterator])) {
-//     $qry7 = "insert into pizza (orderID, size) values (".$orderID.", '".$_POST['size'.$iterator]."');";
-
-//     $rs7 = $db_conn->query($qry7);
-//     $iterator++;
-// }
-//, dough, sauce, cheese, toppings
-//, "$_POST['dough'$iterator]", "$_POST['sauce'$iterator]", "$_POST['cheese'$iterator]", "$_POST['toppings'$iterator]"
-disconnect_db($db_conn);
-//output order number
-
-echo `{ "order": "{$orderID}" }`;
 /**
  * Connect to database
  *
