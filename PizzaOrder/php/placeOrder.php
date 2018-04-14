@@ -58,7 +58,7 @@ if($_POST['cInfo'] != "new"){ //check if the user is using a new or old address
                                 $qry = "insert into pizza (orderID,size,dough,sauce,cheese,toppings) values('".$orderId."','".$size."','".$dough."','".$sauce."','".$cheese."','".$toppings."');";
                                 $db_conn->query($qry);
                             }
-                            echo `{ "order": "{$orderId}" }`; //THIS IS WHERE IT SHOULD GOTO THE LAST PAGE
+                            echo '{ "order": "'.$orderId.'" }'; //THIS IS WHERE IT SHOULD GOTO THE LAST PAGE
                         }
                     }
                 }
@@ -109,7 +109,7 @@ if($_POST['cInfo'] != "new"){ //check if the user is using a new or old address
                                 $qry = "insert into pizza (orderID,size,dough,sauce,cheese,toppings) values('".$orderId."','".$size."','".$dough."','".$sauce."','".$cheese."','".$toppings."');";
                                 $db_conn->query($qry);
                             }
-                            echo `{ "order": "{$orderId}" }`; //THIS IS WHERE IT SHOULD GOTO THE LAST PAGE
+                            echo '{ "order": "'.$orderId.'" }'; //THIS IS WHERE IT SHOULD GOTO THE LAST PAGE
                         }
                     }
                 }

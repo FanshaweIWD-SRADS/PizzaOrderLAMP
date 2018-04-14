@@ -526,6 +526,7 @@ function summaryPage(){
         currentOrder.pizzas = pizzaOrders.slice();
         $.post("php/placeOrder.php", $(this).serialize(), finishOrder);//finishOrder
         event.preventDefault;
+        return false;
         //thankYouPage();
     });
 
@@ -553,15 +554,19 @@ var add_minutes =  function (dt, minutes) {
     ***************************************************************************************************************
 */
 var finishOrder = function(res) {
-    $("#outputDiv").html('<h1>Thank you!</h1>');
-    /*var time = add_minutes(new Date(), 30);
-    
+    var time = add_minutes(new Date(), 30);
+    console.log(res);
     console.log(time.getHours() + ":" + time.getMinutes() + ":" + time.getSeconds());
     $("#outputDiv").html(`<h1>Thank you!</h1>
 <h3>We appreciate your patronage!</h3>
-<p>Your order number is: ${res.order}
+<p>Your order number is: ${JSON.parse(res).order}
 Thankfully we have locations in many places! Your order should be delivered 25 minutes after: ${time.getHours()}:${time.getMinutes()}:${time.getSeconds()}</p>
-If you really love our site, feel free to place another order <a href="index.php">here</a>!
-    `);*/
+If you really love our site, feel free to place another order <a href="index.php">here</a>!`);
+    // <div id="hideMe" style="visibility:hidden"><form id='endForm' name='endForm'> <input type='submit' id='endSubmit' name=endSubmit' value='Cancel Order'/> </form></div></br>
+    // $("#endForm").submit(function(event){
+    //     alert("It is done");
+    // });
+    return false;
 }
+
 
