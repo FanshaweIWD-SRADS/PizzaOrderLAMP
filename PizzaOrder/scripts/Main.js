@@ -484,22 +484,22 @@ function summaryPage(){
     var time = add_minutes(new Date(), 30);
     output += "<h2>Your order will be delivered at: "+time+" to the following address...</h2>";
     
-    // Displaying delivery information - Riley
-    output += "<table><tr><th>Address</th><th>City</th><th>Province</th><th>Phone</th><th>Postal Code</th></tr></th>"+
-    	"<tr><td id=\"addr\" name=\"addr\">"+currentOrder.address.addr+"</td>" + "<td id= \"name\" name=\"city\">"+currentOrder.address.city+"</td>" +
-    	"<td id= \"prov\" name=\"prov\">"+currentOrder.address.prov+"</td>" + "<td id= \"phone\" name=\"phone\">"+currentOrder.address.phone+"</td>" +
-        "<td id= \"post\" name=\"post\">"+currentOrder.address.post+"</td>";
-    if(currentOrder.address.appt) {
-        output += "<td id= \"appt\" name=\"appt\">"+currentOrder.address.appt+"</td>";
-    }
+    // Displaying delivery information - Riley & Diana
+    output += "<table><tr><th>Address</th><th>City</th><th>Province</th><th>Phone</th><th>Postal Code</th><th>Apartment</th></tr>"+
+    "<tr><td id=\"addr\" name=\"addr\">"+currentOrder.address.addr+"</td>" + "<td id= \"name\" name=\"city\">"+currentOrder.address.city+"</td>" +
+    "<td id= \"prov\" name=\"prov\">"+currentOrder.address.prov+"</td>" + "<td id= \"phone\" name=\"phone\">"+currentOrder.address.phone+"</td>" +
+    "<td id= \"post\" name=\"post\">"+currentOrder.address.post+"</td>";
+        if(currentOrder.address.appt) {
+            output += "<td id= \"appt\" name=\"appt\">"+currentOrder.address.appt+"</td>";
+        }
     output += "</tr></table>";
 
 
     //invisible form to pass data to php - Riley & Aaron
-    output += `<form id='placeForm' name='placeForm'><div><input type='text' id="cID" name="cID" value="${currentOrder.uID}"/>
+    output += `<form id='placeForm' name='placeForm'><div style="visibility:hidden"><input type='text' id="cID" name="cID" value="${currentOrder.uID}"/>
     <input type='text' id="cName" name="cName" value="${currentOrder.name}"/>
     <input type='text' id="cEmail" name="cEmail" value="${currentOrder.email}"/>
-    <input type='text' id="cInfo" name="cInfo" value="${currentOrder.addressInfo}"/></div>`;
+    <input type='text' id="cInfo" name="cInfo" value="${currentOrder.addressInfo}"/>`;
     output += "<input id='addr' name='addr' value='"+currentOrder.address.addr+"'/><input type='text' id='city' name='city' value='"+currentOrder.address.city+"'><input type='text' id='prov' name='prov' value='"+currentOrder.address.prov+"'/><input type='text' id='phone' name='phone' value='"+currentOrder.address.phone+"'/><input type='text' id='post' name='post' value='"+currentOrder.address.post+"'/>";
     if(currentOrder.address.appt) {
         output += "<input type='text' id='appt' name='appt'value='"+currentOrder.address.appt+"'/>";
@@ -514,7 +514,7 @@ function summaryPage(){
         output += `<input type="text" id="size${x}" name="size${x}" value="${size}"><input type="text" id="dough${x}" name="dough${x}" value="${dough}"><input type="text" id="sauce${x}" name="sauce${x}" value="${sauce}"><input type="text" id="cheese${x}" name="cheese${x}" value="${cheese}"><input type="text" id="toppings${x}" name="toppings${x}" value="${toppings}"/>`; 
  
     }
-    output+= `<input type="text" id="counter" name="counter" value="${x}"/>`
+    output+= `<input type="text" id="counter" name="counter" value="${x}"/></div>`
     output += "<input type='submit' id='placeSubmit' name='placeSubmit' value='Place Order'/> </form></br>";
 
     //form for cancelling the order
